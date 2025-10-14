@@ -179,6 +179,9 @@ jobs:
         cd "$FRAMEWORK_DIR"
         echo "📁 Running k6 from: $(pwd)"
         
+        # Ensure reports folder exists
+        mkdir -p reports
+        
         # Run k6 and save results to reports folder
         k6 run controller.js --out json=reports/test-results.json
         
