@@ -202,36 +202,12 @@ jobs:
         fi
         
     - name: Upload Test Results
-      run: |
-        echo "📦 Preparing test results for upload..."
-        # Navigate to the framework directory
-        FRAMEWORK_DIR=$(find ./generated-framework -name "*k6-framework" -type d | head -1)
-        if [ -z "$FRAMEWORK_DIR" ]; then
-          echo "❌ Framework directory not found!"
-          exit 1
-        fi
-        cd "$FRAMEWORK_DIR"
-        echo "📁 Collecting results from: $(pwd)"
-        
-        # Create a results directory in the workspace root
-        mkdir -p ../test-results
-        cp test-results.json ../test-results/ 2>/dev/null || echo "⚠️ test-results.json not found"
-        cp -r reports ../test-results/ 2>/dev/null || echo "⚠️ reports directory not found"
-        
-        # List what we found
-        echo "📋 Files to upload:"
-        ls -la ../test-results/ || echo "No test results found"
-        
-        # Go back to workspace root
-        cd ..
-        echo "📁 Uploading from: $(pwd)"
-        
-    - name: Upload Test Results Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: k6-test-results
         path: |
-          test-results/
+          test-results.json
+          reports/
         retention-days: 7
 
   generate-report:
