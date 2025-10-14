@@ -129,9 +129,19 @@ jobs:
     - name: Navigate to Generated Framework
       run: |
         echo "📁 Navigating to generated framework..."
-        FRAMEWORK_DIR=$(find ./generated-framework -name "*-k6-framework" -type d | head -1)
+        echo "📋 Current directory: $(pwd)"
+        echo "📋 Generated framework directory contents:"
+        ls -la ./generated-framework/ || echo "generated-framework directory not found"
+        echo "📋 Looking for framework directories..."
+        find ./generated-framework -name "*k6-framework" -type d || echo "No k6-framework directories found"
+        echo "📋 Looking for any directories..."
+        find ./generated-framework -type d || echo "No directories found in generated-framework"
+        
+        FRAMEWORK_DIR=$(find ./generated-framework -name "*k6-framework" -type d | head -1)
         if [ -z "$FRAMEWORK_DIR" ]; then
           echo "❌ Framework directory not found in artifacts!"
+          echo "📋 Available artifacts:"
+          ls -la ./generated-framework/
           exit 1
         fi
         echo "📁 Framework directory: $FRAMEWORK_DIR"
