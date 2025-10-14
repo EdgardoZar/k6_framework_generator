@@ -184,7 +184,7 @@ jobs:
         
         # Also create a summary report
         echo "📊 Creating test summary..."
-        cat > reports/test-summary.md << EOF
+        cat > reports/test-summary.md << 'EOF'
 # K6 Test Results Summary
 
 **Test Type:** ${{ github.event.inputs.test_type }}
