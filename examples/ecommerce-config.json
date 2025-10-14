@@ -1,0 +1,183 @@
+{
+  "project": {
+    "name": "Ecommerce Performance Tests",
+    "version": "1.0.0",
+    "description": "Performance testing framework for ecommerce application"
+  },
+  "application": {
+    "baseUrl": "https://myecommerce.com",
+    "timeout": 30000,
+    "environments": {
+      "dev": "http://localhost:3000",
+      "staging": "https://staging.myecommerce.com",
+      "prod": "https://myecommerce.com"
+    }
+  },
+  "testScenarios": [
+    {
+      "name": "user_registration",
+      "description": "Test user registration flow",
+      "weight": 30,
+      "businessOps": ["register_api", "send_verification", "verify_email_api", "login_api", "get_profile"]
+    },
+    {
+      "name": "product_browsing",
+      "description": "Test product browsing and search",
+      "weight": 50,
+      "businessOps": ["get_categories", "get_products", "search_products_api", "get_product_details"]
+    },
+    {
+      "name": "checkout_process",
+      "description": "Test complete checkout process",
+      "weight": 20,
+      "businessOps": ["add_to_cart_api", "get_cart", "apply_discount", "calculate_shipping", "create_order", "process_payment"]
+    }
+  ],
+  "apiEndpoints": [
+    {
+      "name": "register_api",
+      "method": "POST",
+      "path": "/api/auth/register",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "username": "{{username}}",
+        "email": "{{email}}",
+        "password": "{{password}}"
+      },
+      "assertions": {
+        "status": 201,
+        "responseTime": 1000,
+        "jsonFields": {
+          "user_id": "exists",
+          "success": "success"
+        }
+      }
+    },
+    {
+      "name": "login_api",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "{{email}}",
+        "password": "{{password}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 500,
+        "jsonFields": {
+          "token": "exists",
+          "success": "success"
+        }
+      }
+    },
+    {
+      "name": "get_products",
+      "method": "GET",
+      "path": "/api/products",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 800,
+        "jsonFields": {
+          "products": "exists"
+        }
+      }
+    },
+    {
+      "name": "search_products_api",
+      "method": "GET",
+      "path": "/api/products/search",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 600,
+        "jsonFields": {
+          "results": "exists"
+        }
+      }
+    },
+    {
+      "name": "add_to_cart_api",
+      "method": "POST",
+      "path": "/api/cart/add",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{token}}"
+      },
+      "body": {
+        "product_id": "{{product_id}}",
+        "quantity": "{{quantity}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 400,
+        "jsonFields": {
+          "success": "success"
+        }
+      }
+    }
+  ],
+  "testData": {
+    "users": [
+      {
+        "username": "testuser1",
+        "email": "testuser1@example.com",
+        "password": "TestPass123!"
+      },
+      {
+        "username": "testuser2",
+        "email": "testuser2@example.com",
+        "password": "TestPass123!"
+      }
+    ],
+    "products": [
+      {
+        "id": 1,
+        "name": "Laptop",
+        "category": "Electronics",
+        "price": 999.99
+      },
+      {
+        "id": 2,
+        "name": "Book",
+        "category": "Books",
+        "price": 19.99
+      }
+    ],
+    "search_terms": [
+      "laptop",
+      "book",
+      "electronics",
+      "clothing"
+    ]
+  },
+  "testTypes": {
+    "smoke": {
+      "vus": 5,
+      "duration": "30s"
+    },
+    "load": {
+      "vus": 50,
+      "duration": "5m"
+    },
+    "stress": {
+      "vus": 100,
+      "duration": "10m"
+    }
+  },
+  "framework": {
+    "logLevel": "INFO",
+    "htmlReporting": true,
+    "defaultTestType": "smoke",
+    "defaultScenario": 1
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "project": {
+    "name": "API Performance Tests",
+    "version": "1.0.0",
+    "description": "Performance testing framework for REST API"
+  },
+  "application": {
+    "baseUrl": "https://api.example.com",
+    "timeout": 30000,
+    "environments": {
+      "dev": "http://localhost:8080",
+      "staging": "https://staging-api.example.com",
+      "prod": "https://api.example.com"
+    }
+  },
+  "testScenarios": [
+    {
+      "name": "api_crud_operations",
+      "description": "Test CRUD operations on API",
+      "weight": 60,
+      "businessOps": ["create_api", "get_resource_api", "list_resources_api", "update_api", "delete_api"]
+    },
+    {
+      "name": "api_search_operations",
+      "description": "Test search and filtering operations",
+      "weight": 40,
+      "businessOps": ["search_api", "filter_api", "paginate_api"]
+    }
+  ],
+  "apiEndpoints": [
+    {
+      "name": "create_api",
+      "method": "POST",
+      "path": "/api/v1/resources",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{token}}"
+      },
+      "body": {
+        "name": "{{resource_name}}",
+        "description": "{{resource_description}}",
+        "category": "{{category}}"
+      },
+      "assertions": {
+        "status": 201,
+        "responseTime": 1000,
+        "jsonFields": {
+          "id": "exists",
+          "success": "success"
+        }
+      }
+    },
+    {
+      "name": "get_resource_api",
+      "method": "GET",
+      "path": "/api/v1/resources/{{resource_id}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 500,
+        "jsonFields": {
+          "id": "exists",
+          "name": "exists"
+        }
+      }
+    },
+    {
+      "name": "list_resources_api",
+      "method": "GET",
+      "path": "/api/v1/resources",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 800,
+        "jsonFields": {
+          "data": "exists",
+          "total": "exists"
+        }
+      }
+    },
+    {
+      "name": "update_api",
+      "method": "PUT",
+      "path": "/api/v1/resources/{{resource_id}}",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{token}}"
+      },
+      "body": {
+        "name": "{{updated_name}}",
+        "description": "{{updated_description}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 600,
+        "jsonFields": {
+          "success": "success"
+        }
+      }
+    },
+    {
+      "name": "delete_api",
+      "method": "DELETE",
+      "path": "/api/v1/resources/{{resource_id}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 204,
+        "responseTime": 400
+      }
+    },
+    {
+      "name": "search_api",
+      "method": "GET",
+      "path": "/api/v1/resources/search",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 700,
+        "jsonFields": {
+          "results": "exists"
+        }
+      }
+    },
+    {
+      "name": "filter_api",
+      "method": "GET",
+      "path": "/api/v1/resources/filter",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 600,
+        "jsonFields": {
+          "data": "exists"
+        }
+      }
+    },
+    {
+      "name": "paginate_api",
+      "method": "GET",
+      "path": "/api/v1/resources/paginated",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 500,
+        "jsonFields": {
+          "data": "exists",
+          "pagination": "exists"
+        }
+      }
+    }
+  ],
+  "testData": {
+    "search_terms": [
+      "test",
+      "resource",
+      "example",
+      "data"
+    ],
+    "categories": [
+      "Category A",
+      "Category B",
+      "Category C"
+    ]
+  },
+  "testTypes": {
+    "smoke": {
+      "vus": 3,
+      "duration": "30s"
+    },
+    "load": {
+      "vus": 25,
+      "duration": "5m"
+    },
+    "stress": {
+      "vus": 100,
+      "duration": "10m"
+    }
+  },
+  "framework": {
+    "logLevel": "INFO",
+    "htmlReporting": true,
+    "defaultTestType": "smoke",
+    "defaultScenario": 1
+  }
+}

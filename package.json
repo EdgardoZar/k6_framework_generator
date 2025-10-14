@@ -1,0 +1,56 @@
+{
+  "name": "k6-framework-generator",
+  "version": "1.0.0",
+  "description": "Generate K6 performance testing frameworks from JSON configuration",
+  "main": "generator.js",
+  "bin": {
+    "k6-generate": "./generator.js"
+  },
+  "scripts": {
+    "generate": "node generator.js",
+    "validate": "node validate-and-generate.js",
+    "test": "node generator.js examples/rick_and_morty.json",
+    "test-sample": "node validate-and-generate.js sample-config.json",
+    "clean": "rm -rf *-k6-framework *-performance-tests-k6-framework *-api-performance-tests-k6-framework",
+    "help": "echo 'Available commands: generate, validate, test, test-sample, clean'"
+  },
+  "keywords": [
+    "k6",
+    "performance-testing",
+    "load-testing",
+    "framework-generator",
+    "testing",
+    "automation",
+    "api-testing",
+    "performance-engineering"
+  ],
+  "author": "EdgardoZar",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EdgardoZar/k6_framework_generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EdgardoZar/k6_framework_generator/issues"
+  },
+  "homepage": "https://github.com/EdgardoZar/k6_framework_generator#readme",
+  "files": [
+    "generator.js",
+    "validate-and-generate.js",
+    "templates/",
+    "examples/",
+    "schemas/",
+    "README.md",
+    "USAGE-GUIDE.md",
+    "ai-prompt-template.md",
+    "sample-config.json"
+  ],
+  "directories": {
+    "lib": "templates",
+    "examples": "examples",
+    "test": "examples"
+  }
+}

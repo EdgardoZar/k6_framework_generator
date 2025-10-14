@@ -1,0 +1,245 @@
+{
+  "project": {
+    "name": "Rick and Morty API Performance Tests",
+    "version": "1.0.0",
+    "description": "Performance testing framework for Rick and Morty API"
+  },
+  "application": {
+    "baseUrl": "https://rickandmortyapi.com/api",
+    "timeout": 30000,
+    "environments": {
+      "dev": "https://rickandmortyapi.com/api",
+      "staging": "https://rickandmortyapi.com/api",
+      "prod": "https://rickandmortyapi.com/api"
+    }
+  },
+  "testScenarios": [
+    {
+      "name": "api_location_operations",
+      "description": "Test CRUD operations for Rick and Morty API",
+      "weight": 33,
+      "businessOps": ["get_all_locations_api", "get_single_location_api", "get_multiple_locations_api"]
+    },
+    {
+      "name": "api_character_operations",
+      "description": "Test character operations for Rick and Morty API",
+      "weight": 34,
+      "businessOps": ["get_all_characters_api", "get_character_by_id_api", "get_character_by_name_api"]
+    },
+    {
+      "name": "api_episode_operations",
+      "description": "Test episode operations for Rick and Morty API",
+      "weight": 33,
+      "businessOps": ["get_all_episodes_api", "get_single_episode_api", "get_multiple_episodes_api"]
+    }
+  ],
+  "apiEndpoints": [
+    {
+      "name": "get_all_locations_api",
+      "method": "GET",
+      "path": "/locations",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000,
+        "jsonFields": {
+          "id": "exists",
+          "name": "exists"
+        }
+      }
+    },
+    {
+      "name": "get_single_location_api",
+      "method": "GET",
+      "path": "/locations/{{location_id}}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000,
+        "jsonFields": {
+          "id": "exists",
+          "name": "exists"
+        }
+      }
+    },
+    {
+      "name": "get_multiple_locations_api",
+      "method": "GET",
+      "path": "/locations/{{location_id}},{{location_id2}},{{location_id3}}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000,
+        "jsonFields": {
+          "id": "exists",
+          "name": "exists"
+        }
+      }
+    },
+    {
+      "name": "get_all_characters_api",
+      "method": "GET",
+      "path": "/characters",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000
+      }
+    },
+    {
+      "name": "get_character_by_id_api",
+      "method": "GET",
+      "path": "/characters/{{character_id}}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000
+      }
+    },
+    {
+      "name": "get_character_by_name_api",
+      "method": "GET",
+      "path": "/characters/{{character_name}}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000
+      }
+    },
+    {
+      "name": "get_all_episodes_api",
+      "method": "GET",
+      "path": "/episodes",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000
+      }
+    },
+    {
+      "name": "get_single_episode_api",
+      "method": "GET",
+      "path": "/episodes/{{episode_id}}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000
+      }
+    },
+    {
+      "name": "get_multiple_episodes_api",
+      "method": "GET",
+      "path": "/episodes/{{episode_id}},{{episode_id2}},{{episode_id3}}",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1000
+      }
+    }
+  ],
+  "testData": {
+    "character_names": [
+      "Rick",
+      "Morty",
+      "Beth",
+      "Jerry",
+      "Summer"
+    ],
+    "episodes": [
+      "Pilot",
+      "Lawnmower Dog",
+      "Anatomy Park",
+      "M. Night Shaym-Aliens!",
+      "Meeseeks and Destroy",
+      "Rick Potion #9",
+      "Raising Gazorpazorp",
+      "Rixty Minutes",
+      "Something Ricked This Way Comes",
+      "Close Rick-counters of the Rick Kind",
+      "Ricksy Business"
+    ],
+    "locations": [
+      "Earth",
+      "Earth (Replacement Dimension)",
+      "Earth (C-137)",
+      "Earth (Dimension C-137)",
+      "Earth (Cronenberg Dimension)",
+      "Earth (Replacement Dimension)",
+      "Earth (Dimension C-137)"
+    ],
+    "character_id": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "episode_id": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "location_id": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ]
+  },
+  "testTypes": {
+    "smoke": {
+      "vus": 10,
+      "duration": "30s"
+    },
+    "load": {
+      "vus": 30,
+      "duration": "5m"
+    },
+    "stress": {
+      "vus": 100,
+      "duration": "10m"
+    }
+  },
+  "framework": {
+    "logLevel": "INFO",
+    "htmlReporting": true,
+    "defaultTestType": "smoke",
+    "defaultScenario": 1
+  }
+}

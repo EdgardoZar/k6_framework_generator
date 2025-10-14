@@ -1,0 +1,203 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "K6 Framework Generator Configuration",
+  "description": "Schema for generating K6 performance testing frameworks",
+  "type": "object",
+  "required": ["project", "application", "testScenarios", "apiEndpoints"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name for the generated framework"
+        },
+        "version": {
+          "type": "string",
+          "description": "Project version"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description"
+        }
+      }
+    },
+    "application": {
+      "type": "object",
+      "required": ["baseUrl"],
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "description": "Base URL of the application to test"
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Default timeout in milliseconds",
+          "default": 30000
+        },
+        "environments": {
+          "type": "object",
+          "description": "Environment-specific URLs",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "testScenarios": {
+      "type": "array",
+      "description": "Test scenarios to generate",
+      "items": {
+        "type": "object",
+        "required": ["name", "businessOps"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Scenario name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Scenario description"
+          },
+          "weight": {
+            "type": "number",
+            "description": "Weight for concurrent scenarios",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "businessOps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Business operations to include in this scenario"
+          }
+        }
+      }
+    },
+    "apiEndpoints": {
+      "type": "array",
+      "description": "API endpoints to generate",
+      "items": {
+        "type": "object",
+        "required": ["name", "method", "path"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "API endpoint name"
+          },
+          "method": {
+            "type": "string",
+            "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+            "description": "HTTP method"
+          },
+          "path": {
+            "type": "string",
+            "description": "API endpoint path"
+          },
+          "headers": {
+            "type": "object",
+            "description": "Default headers for this endpoint",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "body": {
+            "type": "object",
+            "description": "Request body template"
+          },
+          "assertions": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "number",
+                "description": "Expected HTTP status code"
+              },
+              "responseTime": {
+                "type": "number",
+                "description": "Maximum response time in milliseconds"
+              },
+              "jsonFields": {
+                "type": "object",
+                "description": "JSON field assertions",
+                "additionalProperties": {
+                  "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "boolean"}
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "testData": {
+      "type": "object",
+      "description": "Test data to generate",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      }
+    },
+    "testTypes": {
+      "type": "object",
+      "description": "Test type configurations",
+      "properties": {
+        "smoke": {
+          "type": "object",
+          "required": ["vus", "duration"],
+          "properties": {
+            "vus": {"type": "number"},
+            "duration": {"type": "string"}
+          }
+        },
+        "load": {
+          "type": "object",
+          "required": ["vus", "duration"],
+          "properties": {
+            "vus": {"type": "number"},
+            "duration": {"type": "string"}
+          }
+        },
+        "stress": {
+          "type": "object",
+          "required": ["vus", "duration"],
+          "properties": {
+            "vus": {"type": "number"},
+            "duration": {"type": "string"}
+          }
+        }
+      }
+    },
+    "framework": {
+      "type": "object",
+      "description": "Framework-specific settings",
+      "properties": {
+        "logLevel": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARN", "ERROR"],
+          "default": "INFO"
+        },
+        "htmlReporting": {
+          "type": "boolean",
+          "default": true
+        },
+        "defaultTestType": {
+          "type": "string",
+          "enum": ["smoke", "load", "stress"],
+          "default": "smoke"
+        },
+        "defaultScenario": {
+          "type": "number",
+          "minimum": 1,
+          "default": 1
+        }
+      }
+    }
+  }
+}

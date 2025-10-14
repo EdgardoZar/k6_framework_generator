@@ -1,0 +1,259 @@
+{
+  "project": {
+    "name": "Microservices Performance Tests",
+    "version": "1.0.0",
+    "description": "Performance testing framework for microservices architecture"
+  },
+  "application": {
+    "baseUrl": "https://api.microservices.com",
+    "timeout": 30000,
+    "environments": {
+      "dev": "http://localhost:3000",
+      "staging": "https://staging-api.microservices.com",
+      "prod": "https://api.microservices.com"
+    }
+  },
+  "testScenarios": [
+    {
+      "name": "user_service_flow",
+      "description": "Test user service operations",
+      "weight": 40,
+      "businessOps": ["register_user", "send_verification", "login_user", "get_user_token", "get_user_profile", "update_user_profile"]
+    },
+    {
+      "name": "order_service_flow",
+      "description": "Test order service operations",
+      "weight": 35,
+      "businessOps": ["create_order", "validate_order", "update_order", "get_order_details", "get_order_status"]
+    },
+    {
+      "name": "payment_service_flow",
+      "description": "Test payment service operations",
+      "weight": 25,
+      "businessOps": ["create_payment", "process_payment", "create_refund", "process_refund", "get_payment_status"]
+    }
+  ],
+  "apiEndpoints": [
+    {
+      "name": "register_user",
+      "method": "POST",
+      "path": "/api/v1/users/register",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "username": "{{username}}",
+        "email": "{{email}}",
+        "password": "{{password}}"
+      },
+      "assertions": {
+        "status": 201,
+        "responseTime": 1000,
+        "jsonFields": {
+          "user_id": "exists",
+          "success": "success"
+        }
+      }
+    },
+    {
+      "name": "login_user",
+      "method": "POST",
+      "path": "/api/v1/users/login",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "email": "{{email}}",
+        "password": "{{password}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 500,
+        "jsonFields": {
+          "token": "exists",
+          "user_id": "exists"
+        }
+      }
+    },
+    {
+      "name": "get_user_profile",
+      "method": "GET",
+      "path": "/api/v1/users/{{user_id}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 300,
+        "jsonFields": {
+          "user_id": "exists",
+          "username": "exists"
+        }
+      }
+    },
+    {
+      "name": "create_order",
+      "method": "POST",
+      "path": "/api/v1/orders",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{token}}"
+      },
+      "body": {
+        "user_id": "{{user_id}}",
+        "items": "{{order_items}}",
+        "total_amount": "{{total_amount}}"
+      },
+      "assertions": {
+        "status": 201,
+        "responseTime": 800,
+        "jsonFields": {
+          "order_id": "exists",
+          "status": "created"
+        }
+      }
+    },
+    {
+      "name": "update_order",
+      "method": "PUT",
+      "path": "/api/v1/orders/{{order_id}}",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{token}}"
+      },
+      "body": {
+        "status": "{{new_status}}",
+        "notes": "{{order_notes}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 600,
+        "jsonFields": {
+          "success": "success"
+        }
+      }
+    },
+    {
+      "name": "get_order_status",
+      "method": "GET",
+      "path": "/api/v1/orders/{{order_id}}/status",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 400,
+        "jsonFields": {
+          "status": "exists",
+          "order_id": "exists"
+        }
+      }
+    },
+    {
+      "name": "create_payment",
+      "method": "POST",
+      "path": "/api/v1/payments",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer {{token}}"
+      },
+      "body": {
+        "order_id": "{{order_id}}",
+        "amount": "{{amount}}",
+        "payment_method": "{{payment_method}}"
+      },
+      "assertions": {
+        "status": 201,
+        "responseTime": 1000,
+        "jsonFields": {
+          "payment_id": "exists",
+          "status": "pending"
+        }
+      }
+    },
+    {
+      "name": "process_payment",
+      "method": "POST",
+      "path": "/api/v1/payments/{{payment_id}}/process",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 1200,
+        "jsonFields": {
+          "status": "processed"
+        }
+      }
+    },
+    {
+      "name": "get_payment_status",
+      "method": "GET",
+      "path": "/api/v1/payments/{{payment_id}}/status",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "assertions": {
+        "status": 200,
+        "responseTime": 300,
+        "jsonFields": {
+          "status": "exists",
+          "payment_id": "exists"
+        }
+      }
+    }
+  ],
+  "testData": {
+    "users": [
+      {
+        "username": "testuser1",
+        "email": "testuser1@example.com",
+        "password": "TestPass123!"
+      },
+      {
+        "username": "testuser2",
+        "email": "testuser2@example.com",
+        "password": "TestPass123!"
+      }
+    ],
+    "orders": [
+      {
+        "items": [
+          {"product_id": 1, "quantity": 2, "price": 29.99},
+          {"product_id": 2, "quantity": 1, "price": 19.99}
+        ],
+        "total_amount": 79.97
+      }
+    ],
+    "payments": [
+      {
+        "payment_method": "credit_card",
+        "amount": 79.97
+      },
+      {
+        "payment_method": "paypal",
+        "amount": 79.97
+      }
+    ]
+  },
+  "testTypes": {
+    "smoke": {
+      "vus": 5,
+      "duration": "1m"
+    },
+    "load": {
+      "vus": 30,
+      "duration": "5m"
+    },
+    "stress": {
+      "vus": 100,
+      "duration": "10m"
+    }
+  },
+  "framework": {
+    "logLevel": "INFO",
+    "htmlReporting": true,
+    "defaultTestType": "smoke",
+    "defaultScenario": 1
+  }
+}
