@@ -1,6 +1,6 @@
 name: AI Framework Generation & Testing Pipeline
 
-# This workflow runs ONLY on-demand (manual trigger)
+# This workflow runs ONLY on-demand (manual trigger), use it to create a framework for the first time
 on:
   workflow_dispatch:
     inputs:
