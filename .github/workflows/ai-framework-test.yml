@@ -142,9 +142,24 @@ jobs:
     - name: Update Test Configuration
       run: |
         echo "🔧 Updating test configuration for ${{ github.event.inputs.test_type }} test..."
-        # Update the config.js to use the specified test type
-        sed -i "s/static testType = [0-9]/static testType = ${{ github.event.inputs.test_type == 'smoke' && '1' || github.event.inputs.test_type == 'load' && '2' || '3' }}/" config/config.js
-        echo "✅ Test configuration updated"
+        echo "📁 Current directory: $(pwd)"
+        echo "📋 Directory contents:"
+        ls -la
+        echo "📋 Config directory contents:"
+        ls -la config/ || echo "Config directory not found"
+        
+        # Check if config.js exists
+        if [ -f "config/config.js" ]; then
+          echo "✅ Found config/config.js, updating test type..."
+          # Update the config.js to use the specified test type
+          sed -i "s/static testType = [0-9]/static testType = ${{ github.event.inputs.test_type == 'smoke' && '1' || github.event.inputs.test_type == 'load' && '2' || '3' }}/" config/config.js
+          echo "✅ Test configuration updated"
+        else
+          echo "❌ config/config.js not found!"
+          echo "📋 Available files:"
+          find . -name "*.js" -type f
+          exit 1
+        fi
         
     - name: Run k6 Tests
       run: |
