@@ -224,8 +224,8 @@
   },
   "testTypes": {
     "smoke": {
-      "vus": 10,
-      "duration": "30s"
+      "vus": 3,
+      "duration": "10s"
     },
     "load": {
       "vus": 30,
