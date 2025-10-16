@@ -1,7 +1,16 @@
 name: AI Framework Generation & Testing Pipeline
 
-# This workflow runs ONLY on-demand (manual trigger), use it to create a framework for the first time
+# This workflow runs on-demand (manual trigger) OR when sample-config.json is updated
 on:
+  # Trigger when sample-config.json is pushed to main or dev branch
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'sample-config.json'
+  
+  # Manual trigger with options
   workflow_dispatch:
     inputs:
       config_file:
@@ -49,14 +58,22 @@ jobs:
       
     - name: Display selected configuration
       run: |
-        echo "🔧 Using configuration file: ${{ github.event.inputs.config_file }}"
-        echo "🧪 Test type: ${{ github.event.inputs.test_type }}"
-        echo "▶️ Run k6 tests: ${{ github.event.inputs.run_k6_tests }}"
+        CONFIG_FILE="${{ github.event.inputs.config_file || 'sample-config.json' }}"
+        TEST_TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
+        RUN_TESTS="${{ github.event.inputs.run_k6_tests || 'true' }}"
+        TRIGGER="${{ github.event_name }}"
+        
+        echo "🔧 Using configuration file: $CONFIG_FILE"
+        echo "🧪 Test type: $TEST_TYPE"
+        echo "▶️ Run k6 tests: $RUN_TESTS"
+        echo "🚀 Triggered by: $TRIGGER"
         
     - name: Validate and Generate Framework
       run: |
+        CONFIG_FILE="${{ github.event.inputs.config_file || 'sample-config.json' }}"
         echo "📋 Step 1: Validating configuration and generating framework..."
-        node validate-and-generate.js ${{ github.event.inputs.config_file }}
+        echo "📋 Using config file: $CONFIG_FILE"
+        node validate-and-generate.js "$CONFIG_FILE"
         
     - name: Verify Framework Generation
       run: |
@@ -96,7 +113,8 @@ jobs:
     name: Test Generated Framework
     runs-on: ubuntu-latest
     needs: validate-and-generate
-    if: ${{ github.event.inputs.run_k6_tests == 'true' }}
+    # Run tests if manually triggered with run_k6_tests=true OR if triggered by push (auto-run)
+    if: ${{ github.event.inputs.run_k6_tests == 'true' || github.event_name == 'push' }}
     
     steps:
     - name: Checkout code
@@ -150,7 +168,8 @@ jobs:
         ls -la
         
         # Update test configuration
-        echo "🔧 Updating test configuration for ${{ github.event.inputs.test_type }} test..."
+        TEST_TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
+        echo "🔧 Updating test configuration for $TEST_TYPE test..."
         echo "📋 Config directory contents:"
         ls -la config/ || echo "Config directory not found"
         
@@ -158,8 +177,15 @@ jobs:
         if [ -f "config/config.js" ]; then
           echo "✅ Found config/config.js, updating test type..."
           # Update the config.js to use the specified test type
-          sed -i "s/static testType = [0-9]/static testType = ${{ github.event.inputs.test_type == 'smoke' && '1' || github.event.inputs.test_type == 'load' && '2' || '3' }}/" config/config.js
-          echo "✅ Test configuration updated"
+          # Map test type to number: smoke=1, load=2, stress=3
+          case "$TEST_TYPE" in
+            "smoke") TEST_TYPE_NUM=1 ;;
+            "load") TEST_TYPE_NUM=2 ;;
+            "stress") TEST_TYPE_NUM=3 ;;
+            *) TEST_TYPE_NUM=1 ;;
+          esac
+          sed -i "s/static testType = [0-9]/static testType = $TEST_TYPE_NUM/" config/config.js
+          echo "✅ Test configuration updated to: $TEST_TYPE (type $TEST_TYPE_NUM)"
         else
           echo "❌ config/config.js not found!"
           echo "📋 Available files:"
@@ -169,7 +195,8 @@ jobs:
         
     - name: Run k6 Tests
       run: |
-        echo "🚀 Running k6 ${{ github.event.inputs.test_type }} test..."
+        TEST_TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
+        echo "🚀 Running k6 $TEST_TYPE test..."
         # Navigate to the framework directory
         FRAMEWORK_DIR=$(find ./generated-framework -name "*k6-framework" -type d | head -1)
         if [ -z "$FRAMEWORK_DIR" ]; then
@@ -190,7 +217,7 @@ jobs:
         {
           echo "# K6 Test Results Summary"
           echo ""
-          echo "**Test Type:** ${{ github.event.inputs.test_type }}"
+          echo "**Test Type:** $TEST_TYPE"
           echo "**Test Date:** $(date)"
           echo "**Framework:** $(basename "$PWD")"
           echo ""
@@ -286,19 +313,25 @@ jobs:
         
     - name: Generate Summary Report
       run: |
+        CONFIG_FILE="${{ github.event.inputs.config_file || 'sample-config.json' }}"
+        TEST_TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
+        RUN_TESTS="${{ github.event.inputs.run_k6_tests || 'true' }}"
+        TRIGGER="${{ github.event_name }}"
+        
         echo "📋 Generating Test Summary Report..."
         echo "=========================================="
         echo "🎯 AI Framework Generation & Testing Pipeline"
         echo "=========================================="
         echo ""
         echo "📅 Run Date: $(date)"
-        echo "🔧 Configuration: ${{ github.event.inputs.config_file }}"
-        echo "🧪 Test Type: ${{ github.event.inputs.test_type }}"
-        echo "▶️ K6 Tests Run: ${{ github.event.inputs.run_k6_tests }}"
+        echo "🚀 Triggered by: $TRIGGER"
+        echo "🔧 Configuration: $CONFIG_FILE"
+        echo "🧪 Test Type: $TEST_TYPE"
+        echo "▶️ K6 Tests Run: $RUN_TESTS"
         echo ""
         echo "📊 Results Summary:"
         echo "- Framework Generation: ✅ Success"
-        if [ "${{ github.event.inputs.run_k6_tests }}" == "true" ]; then
+        if [ "$RUN_TESTS" == "true" ] || [ "$TRIGGER" == "push" ]; then
           echo "- K6 Test Execution: ✅ Success"
         else
           echo "- K6 Test Execution: ⏭️ Skipped"
@@ -306,7 +339,7 @@ jobs:
         echo ""
         echo "📁 Artifacts Generated:"
         echo "- Generated K6 Framework"
-        if [ "${{ github.event.inputs.run_k6_tests }}" == "true" ]; then
+        if [ "$RUN_TESTS" == "true" ] || [ "$TRIGGER" == "push" ]; then
           echo "- K6 Test Results"
           echo "- HTML Reports (if enabled)"
         fi
@@ -315,21 +348,27 @@ jobs:
         
     - name: Upload Summary Report
       run: |
+        CONFIG_FILE="${{ github.event.inputs.config_file || 'sample-config.json' }}"
+        TEST_TYPE="${{ github.event.inputs.test_type || 'smoke' }}"
+        RUN_TESTS="${{ github.event.inputs.run_k6_tests || 'true' }}"
+        TRIGGER="${{ github.event_name }}"
+        
         echo "📄 Creating summary report..."
         cat > pipeline-summary.md << EOF
         # AI Framework Generation & Testing Pipeline - Summary
         
         **Run Date:** $(date)
-        **Configuration:** ${{ github.event.inputs.config_file }}
-        **Test Type:** ${{ github.event.inputs.test_type }}
-        **K6 Tests:** ${{ github.event.inputs.run_k6_tests }}
+        **Triggered By:** $TRIGGER
+        **Configuration:** $CONFIG_FILE
+        **Test Type:** $TEST_TYPE
+        **K6 Tests:** $RUN_TESTS
         
         ## Results
         - ✅ Framework Generation: Success
         - ✅ Configuration Validation: Success
         EOF
         
-        if [ "${{ github.event.inputs.run_k6_tests }}" == "true" ]; then
+        if [ "$RUN_TESTS" == "true" ] || [ "$TRIGGER" == "push" ]; then
           echo "        - ✅ K6 Test Execution: Success" >> pipeline-summary.md
         else
           echo "        - ⏭️ K6 Test Execution: Skipped" >> pipeline-summary.md
@@ -338,7 +377,7 @@ jobs:
         echo "        " >> pipeline-summary.md
         echo "        ## Artifacts" >> pipeline-summary.md
         echo "        - Generated K6 Framework" >> pipeline-summary.md
-        if [ "${{ github.event.inputs.run_k6_tests }}" == "true" ]; then
+        if [ "$RUN_TESTS" == "true" ] || [ "$TRIGGER" == "push" ]; then
           echo "        - K6 Test Results" >> pipeline-summary.md
           echo "        - HTML Reports" >> pipeline-summary.md
         fi

@@ -165,3 +165,6 @@ pnpm-lock.yaml
 # Local configuration files
 config.local.json
 .env.local
+
+# Personal documentation (not for repo)
+WORKFLOW-GUIDE-PERSONAL.md
