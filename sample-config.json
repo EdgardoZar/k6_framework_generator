@@ -1,83 +1,55 @@
 {
   "project": {
-    "name": "Tool Management System Performance Tests",
+    "name": "Local Inventory Tool Performance Tests",
     "version": "1.0.0",
-    "description": "Performance testing framework for internal tool management application with authentication, CRUD operations, and dashboard analytics"
+    "description": "Performance tests for a local inventory management tool"
   },
   "application": {
     "baseUrl": "http://127.0.0.1:5000",
     "timeout": 30000,
     "environments": {
       "dev": "http://127.0.0.1:5000",
-      "staging": "http://staging-tools.internal:5000",
-      "prod": "http://tools.internal:5000"
+      "staging": "http://staging.inventory-tool.com",
+      "prod": "http://inventory-tool.com"
     }
   },
   "testScenarios": [
     {
-      "name": "user_registration_workflow",
-      "description": "Complete user registration and initial profile setup flow",
-      "weight": 15,
-      "businessOps": ["register_user_api", "login_user_api", "get_profile_api"]
+      "name": "user_authentication_flow",
+      "description": "Tests the user login, profile view, and logout process",
+      "weight": 30,
+      "businessOps": ["login_api", "get_profile_api", "logout_api"]
     },
     {
-      "name": "tool_management_workflow", 
-      "description": "Primary tool management operations including CRUD functionality",
-      "weight": 50,
-      "businessOps": ["login_user_api", "get_tools_list_api", "create_tool_api", "edit_tool_api", "delete_tool_api", "logout_user_api"]
+      "name": "tool_management_workflow",
+      "description": "Tests creating, editing, and deleting tools",
+      "weight": 40,
+      "businessOps": ["create_tool_api", "edit_tool_api", "delete_tool_api"]
     },
     {
-      "name": "dashboard_monitoring_session",
-      "description": "Dashboard access and statistics monitoring workflow",
-      "weight": 20,
-      "businessOps": ["login_user_api", "get_dashboard_stats_api", "get_profile_api", "logout_user_api"]
-    },
-    {
-      "name": "tool_browsing_pagination",
-      "description": "Tool catalog browsing with different pagination settings",
-      "weight": 15,
-      "businessOps": ["login_user_api", "get_tools_paginated_api", "get_tool_details_api", "logout_user_api"]
+      "name": "inventory_browsing",
+      "description": "Tests browsing tool pages and viewing dashboard stats",
+      "weight": 30,
+      "businessOps": ["get_tool_pages_api", "get_dashboard_stats_api"]
     }
   ],
   "apiEndpoints": [
     {
-      "name": "register_user_api",
+      "name": "login_api",
       "method": "POST",
-      "path": "/auth/register",
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "body": {
-        "username": "{{username}}",
-        "email": "{{user_email}}",
-        "password": "{{user_password}}",
-        "confirm_password": "{{user_password}}"
-      },
-      "assertions": {
-        "status": 201,
-        "responseTime": 800,
-        "jsonFields": {
-          "user_id": "exists",
-          "message": "exists"
-        }
-      }
-    },
-    {
-      "name": "login_user_api",
-      "method": "POST", 
       "path": "/auth/login",
       "headers": {
         "Content-Type": "application/json"
       },
       "body": {
-        "email": "{{user_email}}",
-        "password": "{{user_password}}"
+        "username": "{username}",
+        "password": "{password}"
       },
       "assertions": {
         "status": 200,
         "responseTime": 500,
         "jsonFields": {
-          "access_token": "exists",
+          "token": "exists",
           "user_id": "exists"
         }
       }
@@ -87,7 +59,7 @@
       "method": "GET",
       "path": "/auth/profile",
       "headers": {
-        "Authorization": "Bearer {{access_token}}"
+        "Authorization": "Bearer {token}"
       },
       "assertions": {
         "status": 200,
@@ -99,35 +71,30 @@
       }
     },
     {
-      "name": "get_tools_list_api",
-      "method": "GET",
-      "path": "/api/tools?page=1&page_size=20",
+      "name": "logout_api",
+      "method": "POST",
+      "path": "/auth/logout",
       "headers": {
-        "Authorization": "Bearer {{access_token}}"
+        "Authorization": "Bearer {token}"
       },
       "assertions": {
         "status": 200,
-        "responseTime": 400,
-        "jsonFields": {
-          "tools": "exists",
-          "total_count": "exists",
-          "page": "exists"
-        }
+        "responseTime": 300
       }
     },
     {
-      "name": "get_tools_paginated_api",
-      "method": "GET", 
-      "path": "/api/tools?page={{page_number}}&page_size={{page_size}}",
+      "name": "get_tool_pages_api",
+      "method": "GET",
+      "path": "/api/tools?page={page}&limit={limit}",
       "headers": {
-        "Authorization": "Bearer {{access_token}}"
+        "Authorization": "Bearer {token}"
       },
       "assertions": {
         "status": 200,
-        "responseTime": 600,
+        "responseTime": 500,
         "jsonFields": {
           "tools": "exists",
-          "total_count": "exists"
+          "total": "exists"
         }
       }
     },
@@ -137,75 +104,54 @@
       "path": "/api/tools",
       "headers": {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {{access_token}}"
+        "Authorization": "Bearer {token}"
       },
       "body": {
-        "name": "{{tool_name}}",
-        "description": "{{tool_description}}",
-        "category": "{{tool_category}}",
-        "status": "active",
-        "quantity": "{{tool_quantity}}"
+        "name": "{tool_name}",
+        "category": "{tool_category}",
+        "quantity": "{tool_quantity}"
       },
       "assertions": {
         "status": 201,
-        "responseTime": 700,
+        "responseTime": 600,
         "jsonFields": {
-          "tool_id": "exists",
+          "id": "exists",
           "name": "exists"
-        }
-      }
-    },
-    {
-      "name": "get_tool_details_api",
-      "method": "GET",
-      "path": "/api/tools/{{tool_id}}",
-      "headers": {
-        "Authorization": "Bearer {{access_token}}"
-      },
-      "assertions": {
-        "status": 200,
-        "responseTime": 250,
-        "jsonFields": {
-          "tool_id": "exists",
-          "name": "exists",
-          "description": "exists"
         }
       }
     },
     {
       "name": "edit_tool_api",
       "method": "PUT",
-      "path": "/api/tools/{{tool_id}}",
+      "path": "/api/tools/{tool_id}",
       "headers": {
         "Content-Type": "application/json",
-        "Authorization": "Bearer {{access_token}}"
+        "Authorization": "Bearer {token}"
       },
       "body": {
-        "name": "{{tool_name}}",
-        "description": "{{tool_description}}",
-        "category": "{{tool_category}}",
-        "quantity": "{{tool_quantity}}"
+        "name": "{updated_tool_name}",
+        "category": "{updated_tool_category}",
+        "quantity": "{updated_tool_quantity}"
       },
       "assertions": {
         "status": 200,
-        "responseTime": 600,
+        "responseTime": 500,
         "jsonFields": {
-          "tool_id": "exists",
-          "updated_at": "exists"
+          "id": "exists",
+          "name": "exists"
         }
       }
     },
     {
       "name": "delete_tool_api",
       "method": "DELETE",
-      "path": "/api/tools/{{tool_id}}",
+      "path": "/api/tools/{tool_id}",
       "headers": {
-        "Authorization": "Bearer {{access_token}}"
+        "Authorization": "Bearer {token}"
       },
       "assertions": {
         "status": 204,
-        "responseTime": 400,
-        "jsonFields": {}
+        "responseTime": 400
       }
     },
     {
@@ -213,46 +159,26 @@
       "method": "GET",
       "path": "/dashboard/api/stats",
       "headers": {
-        "Authorization": "Bearer {{access_token}}"
+        "Authorization": "Bearer {token}"
       },
       "assertions": {
         "status": 200,
-        "responseTime": 800,
+        "responseTime": 600,
         "jsonFields": {
           "total_tools": "exists",
-          "active_tools": "exists",
-          "categories": "exists"
-        }
-      }
-    },
-    {
-      "name": "logout_user_api",
-      "method": "POST",
-      "path": "/auth/logout",
-      "headers": {
-        "Authorization": "Bearer {{access_token}}"
-      },
-      "assertions": {
-        "status": 200,
-        "responseTime": 300,
-        "jsonFields": {
-          "message": "exists"
+          "low_stock_items": "exists"
         }
       }
     }
   ],
   "testData": {
-    "user_emails": ["testuser1@company.com", "testuser2@company.com", "testuser3@company.com", "admin@company.com", "manager@company.com"],
-    "usernames": ["testuser1", "testuser2", "testuser3", "adminuser", "manager"],
-    "user_passwords": ["TestPass123!", "SecurePass456!", "StrongPass789!", "AdminPass000!", "ManagerPass111!"],
-    "tool_names": ["Hydraulic Pump", "Precision Drill", "Digital Multimeter", "Torque Wrench", "Oscilloscope", "Impact Driver", "Laser Level", "Pipe Cutter"],
-    "tool_descriptions": ["High-pressure hydraulic pump for industrial applications", "Precision drilling tool with variable speed control", "Digital multimeter for electrical measurements", "Calibrated torque wrench for accurate fastening", "Digital storage oscilloscope for signal analysis", "Cordless impact driver with brushless motor", "Rotating laser level for construction alignment", "Professional pipe cutting tool with multiple blade sizes"],
-    "tool_categories": ["Hydraulic", "Power Tools", "Electrical", "Hand Tools", "Measurement", "Construction", "Plumbing"],
-    "tool_quantities": ["1", "2", "5", "10", "3", "7", "15", "4"],
-    "tool_ids": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"],
-    "page_sizes": ["20", "30", "50"], 
-    "page_numbers": ["1", "2", "3", "4", "5"],
-    "search_terms": ["drill", "pump", "wrench", "meter", "level", "driver"]
+    "user_ids": ["1", "2", "3", "4", "5"],
+    "usernames": ["john_doe", "jane_smith", "bob_builder", "alice_mechanic", "charlie_carpenter"],
+    "passwords": ["securePass1", "toolMaster2", "inventoryPro3", "fixItAll4", "buildItUp5"],
+    "tool_ids": ["101", "102", "103", "104", "105"],
+    "tool_names": ["Hammer", "Screwdriver", "Wrench", "Drill", "Saw"],
+    "tool_categories": ["Hand Tools", "Power Tools", "Measuring Tools", "Cutting Tools", "Fastening Tools"],
+    "tool_quantities": ["10", "15", "8", "12", "6"]
   },
   "testTypes": {
     "smoke": {
@@ -271,6 +197,6 @@
   "framework": {
     "logLevel": "INFO",
     "htmlReporting": true,
-    "defaultScenario": 2
+    "defaultScenario": 1
   }
 }
